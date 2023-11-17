@@ -17,6 +17,7 @@ router.post(
     body("password", "enter a pass of min lentgh 5").isLength({ min: 5 }),
   ],
   async (req, res) => {
+
     // finding errors
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
@@ -27,9 +28,12 @@ router.post(
     try {
       let user = await User.findOne({ email: req.body.email });
       if (user) {
-        return res.status(400)
+        return res
+          .status(409)
           .json({ error: "a user already exisits with this email" });
       }
+
+      //adding security
 
       const salt = await bcrypt.genSalt(10);
       const secpass = await bcrypt.hash(req.body.password, salt);
@@ -51,6 +55,7 @@ router.post(
     }
   }
 );
+
 
 //ROUTE 2 :  authentication login
 router.post(

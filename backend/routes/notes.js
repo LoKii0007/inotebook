@@ -3,16 +3,16 @@ const fetchuser = require("../middleware/fetchuser");
 const { body, validationResult } = require("express-validator");
 const router = express.Router();
 const Notes = require("../models/Notes");
+const { json } = require("react-router-dom");
 
 //ROUTE 1 : get all notes using /api/auth/getuser. login required
-
 router.get("/fetchallnotes", fetchuser, async (req, res) => {
   const notes = await Notes.find({ user: req.user.id });
   res.json(notes);
 });
 
-//ROUTE 2 : create notes . login required
 
+//ROUTE 2 : create notes . login required
 router.post(
   "/addnotes",
   fetchuser,
@@ -44,8 +44,8 @@ router.post(
   }
 );
 
-//ROUTE 3 : update notes . login required
 
+//ROUTE 3 : update notes . login required
 router.put("/updatenote/:id", fetchuser, async (req, res) => {
   try{
     const { title, description, tag } = req.body;
@@ -61,7 +61,7 @@ router.put("/updatenote/:id", fetchuser, async (req, res) => {
       newNote.tag = tag;
     }
 
-    // params heaser se id lega
+    // params header se id lega
     let note = await Notes.findById(req.params.id);
     if (!note) {
       return res.status(404).send("not found");
@@ -81,8 +81,8 @@ router.put("/updatenote/:id", fetchuser, async (req, res) => {
   }
 });
 
-// ROUTE 4 : delete note. login req
 
+// ROUTE 4 : delete note. login req
 router.delete("/deletenote/:id", fetchuser, async (req, res) => {
 
   // finding note to be deleted

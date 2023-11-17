@@ -1,43 +1,127 @@
 import { useState } from "react";
-import noteContext from "./notecontext";
+import NoteContext from "./notecontext";
 
 const NoteState = (props) => {
-  const initialNotes = [
-    {
-      _id: "6515ed6a8c431925d09e7b4d",
-      user: "6515d93ac9ec873d0b50f41d",
-      title: "mern stack chutiya hai",
-      description: "loda lassan",
-      tag: "personal",
-      date: "2023-09-28T21:17:30.749Z",
-      __v: 0,
-    },
-    {
-      _id: "65174da8639ccdb87e1dd4b4",
-      user: "6515d93ac9ec873d0b50f41d",
-      title: "mern stack bahut chutiya hai",
-      description: "1",
-      tag: "personall",
-      date: "2023-09-29T22:20:24.386Z",
-      __v: 0,
-    },
-    {
-      _id: "65174fbd1f0a8fa266fa4e74",
-      user: "6515d93ac9ec873d0b50f41d",
-      title: "mern stack ab bhi chutiya hai",
-      description: "loda lassann",
-      tag: "personall",
-      date: "2023-09-29T22:29:17.511Z",
-      __v: 0,
-    },
-  ];
-
+  const host = "http://localhost:5000";
+  const initialNotes = [];
   const [notes, setNotes] = useState(initialNotes);
 
+  //fetching notes using api
+  const getNotes = async () => {
+    const response = await fetch(`${host}/api/notes/fetchallnotes`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        "auth-token": localStorage.getItem("token")
+      },
+    });
+
+    const json = await response.json();
+    console.log(json);
+
+    //editing in ui
+    setNotes(json);
+  };
+
+  // adding notes using api
+  const addNote = async (title, description, tag) => {
+    try {
+      const response = await fetch(`${host}/api/notes/addnotes`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "auth-token": localStorage.getItem("token"),
+        },
+        body: JSON.stringify({ title, description, tag }),
+      });
+
+      if (!response.ok) {
+        console.log("error adding notes");
+      } else {
+        const json = await response.json();
+
+        //editing in ui
+        console.log("added new note : ", +json.savedNote);
+        setNotes(notes.concat(json));
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+
+  // deleting notes usnig api
+  const deletenote = async (id) => {
+    console.log("deleting note : " + id);
+    try {
+      const response = await fetch(`${host}/api/notes/deletenote/${id}`, {
+        method: "DELETE",
+        headers: {
+          "auth-token":localStorage.getItem("token"),
+        },
+      });
+
+      if (!response.ok) {
+        console.log("error deleting notes");
+      } else {
+        const json = await response.json();
+        console.log(json);
+      }
+    } catch (error) {
+      console.log(error);
+    }
+
+    // editing in ui
+    const newnotes = notes.filter((note) => {
+      return note._id !== id;
+    });
+    setNotes(newnotes);
+  };
+
+
+  // updating notes using api
+  const updateNote = async (title, description, tag, id) => {
+    try {
+      const response = await fetch(`${host}/api/notes/updatenote/${id}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          "auth-token": localStorage.getItem("token"),
+        },
+        body: JSON.stringify({ title, description, tag }),
+      });
+
+      if (!response.ok) {
+        console.log("error adding notes");
+      } else {
+        const json = await response.json();
+        console.log("updated note : ", + json._id);
+      }
+    } catch (error) {
+      console.log(error);
+    }
+
+    // editing in ui
+
+    let newNotes= JSON.parse(JSON.stringify(notes))
+
+    for (let i = 0; i< notes.length ; i++) {
+      if (notes[i]._id === id) {
+        newNotes[i].title = title;
+        newNotes[i].description = description;
+        newNotes[i].tag = tag;
+        break;
+      }
+    }
+    setNotes(newNotes)
+  };
+
   return (
-    <noteContext.Provider value={{ notes, setNotes }}>
+    <NoteContext.Provider
+      value={{ notes, addNote, deletenote, getNotes, updateNote }}
+    >
       {props.children}
-    </noteContext.Provider>
+    </NoteContext.Provider>
   );
 };
 
