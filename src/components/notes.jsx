@@ -9,8 +9,7 @@ const Notes = () => {
 
   useEffect(() => {
     getNotes();
-  }, [getNotes]);
-
+  }, []);
 
   return (
     <>
@@ -20,9 +19,9 @@ const Notes = () => {
       <h1>your notes</h1>
 
       <div className="container">
-        {notes.map((note) => {
+        {Array.isArray(notes) && notes.length >0 ? notes.map((note) => {
           return <Noteitem key={note._id} note={note} />;
-        })}
+        }):"your notes are empty"}
       </div>
 
     </>
